@@ -65,16 +65,16 @@ def generate_project_content(
     return agent.generate(project_input)
 
 
-def generate_from_example(
-    example: dict, llm: Optional[ChatOpenAI] = None
+def generate_content(
+    data: dict, llm: Optional[ChatOpenAI] = None
 ) -> Union[EventContentOutput, ProjectContentOutput]:
     if llm is None:
         llm = create_llm()
 
-    text = f"{example.get('name', '')} {example.get('description', '')}"
+    text = f"{data.get('name', '')} {data.get('description', '')}"
     content_type = route(text, llm)
 
     if content_type == "EVENT":
-        return generate_event_content(llm=llm, **example)
+        return generate_event_content(llm=llm, **data)
     else:
-        return generate_project_content(llm=llm, **example)
+        return generate_project_content(llm=llm, **data)
