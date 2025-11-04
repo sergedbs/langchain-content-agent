@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
+from prompts import GENERIC_PROMPT
+from schemas import BaseOutput
+
 
 def main():
     load_dotenv()
@@ -18,15 +21,7 @@ def main():
 
     model = ChatOpenAI(model=model_name, temperature=0.7)
 
-    prompt = ChatPromptTemplate.from_template("""
-    Generates a short text for a social media post.
-    Returns JSON exactly in the format:
-    {{
-        "title": "short creative title",
-        "text": "2-3 sentences of text in Romanian"
-    }}
-    No explanations, just JSON.
-    """)
+    prompt = ChatPromptTemplate.from_template(GENERIC_PROMPT)
 
     agent = prompt | model
     result = agent.invoke({})
@@ -36,10 +31,16 @@ def main():
 
     try:
         data = json.loads(content)
-        print("\nParsed JSON:")
-        print(json.dumps(data, indent=2, ensure_ascii=False))
+        output = BaseOutput(**data)
     except json.JSONDecodeError:
-        print("\nCould not parse valid JSON, check the model output formatting.")
+        print("Model didn’t return valid JSON.")
+        return
+    except Exception as e:
+        print(f"Validation failed: {e}")
+        return
+
+    print("\nParsed JSON:")
+    print(output.model_dump_json(indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
