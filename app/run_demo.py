@@ -1,6 +1,6 @@
 from app.main import create_llm, generate_content
 from app.models.outputs import EventContentOutput, ProjectContentOutput
-from app.examples import ALL_EXAMPLES
+from app.examples import EXAMPLES
 
 
 def run_demo():
@@ -8,9 +8,9 @@ def run_demo():
 
     llm = create_llm()
 
-    for i, example in enumerate(ALL_EXAMPLES, 1):
+    for i, example in enumerate(EXAMPLES, 1):
         print("=" * 80)
-        print(f"[{i}/{len(ALL_EXAMPLES)}] {example['name']}")
+        print(f"[{i}/{len(EXAMPLES)}] {example['name']}")
         print("=" * 80)
 
         try:
