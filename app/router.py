@@ -1,5 +1,7 @@
 from langchain_openai import ChatOpenAI
 
+from app.prompts import ROUTING_PROMPT
+
 EVENT_KEYWORDS = {
     "eveniment",
     "event",
@@ -42,16 +44,7 @@ def detect_by_keywords(text: str) -> str | None:
 
 
 def detect_by_ai(text: str, llm: ChatOpenAI) -> str | None:
-    prompt = f"""Determine if the following text is about an EVENT or a PROJECT.
-
-EVENT = conferences, workshops, summits, webinars, meetups, seminars
-PROJECT = programs, accelerators, partnerships, initiatives
-
-Respond with ONLY one word: 'EVENT' or 'PROJECT'
-
-Text: {text}
-"""
-
+    prompt = ROUTING_PROMPT.format(text=text)
     response = llm.invoke(prompt)
     result = str(response.content).strip().upper()
 

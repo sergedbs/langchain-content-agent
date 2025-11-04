@@ -77,3 +77,13 @@ ADAPTARE PLATFORMĂ:
 
 TON: Adaptat brandului proiectului
 """
+
+ROUTING_PROMPT = """Determine if the following text is about an EVENT or a PROJECT.
+
+EVENT = conferences, workshops, summits, webinars, meetups, seminars
+PROJECT = programs, accelerators, partnerships, initiatives
+
+Respond with ONLY one word: 'EVENT' or 'PROJECT'
+
+Text: {text}
+"""
