@@ -1,46 +1,115 @@
-import os
-import json
+from typing import Optional, Union
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
+
+from app.config import get_settings
+from app.models.inputs import EventInput, ProjectInput
+from app.models.outputs import EventContentOutput, ProjectContentOutput
+from app.agents import EventAgent, ProjectAgent
+from app.examples import ALL_EXAMPLES
+from app.router import route
+
+load_dotenv()
 
 
-def main():
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+def create_llm(
+    model: Optional[str] = None, temperature: Optional[float] = None
+) -> ChatOpenAI:
+    settings = get_settings()
+    return ChatOpenAI(
+        model=model or settings.openai_model,
+        temperature=temperature or settings.temperature,
+    )
 
-    if not api_key:
-        print("Missing OPENAI_API_KEY in .env")
-        return
 
-    print(f"Using model: {model_name}")
+def generate_event_content(
+    name: str,
+    description: str,
+    post_type: str,
+    platform: str,
+    other_details: str = "",
+    llm: Optional[ChatOpenAI] = None,
+) -> EventContentOutput:
+    if llm is None:
+        llm = create_llm()
 
-    model = ChatOpenAI(model=model_name, temperature=0.7)
+    agent = EventAgent(llm)
+    event_input = EventInput(
+        name=name,
+        description=description,
+        post_type=post_type,
+        platform=platform,
+        other_details=other_details,
+    )
+    return agent.generate(event_input)
 
-    prompt = ChatPromptTemplate.from_template("""
-    Generates a short text for a social media post.
-    Returns JSON exactly in the format:
-    {{
-        "title": "short creative title",
-        "text": "2-3 sentences of text in Romanian"
-    }}
-    No explanations, just JSON.
-    """)
 
-    agent = prompt | model
-    result = agent.invoke({})
+def generate_project_content(
+    name: str,
+    context: str,
+    platform: str,
+    description: str,
+    other_details: str = "",
+    llm: Optional[ChatOpenAI] = None,
+) -> ProjectContentOutput:
+    if llm is None:
+        llm = create_llm()
 
-    content = result.content.strip()
-    print("\nModel output:\n", content)
+    agent = ProjectAgent(llm)
+    project_input = ProjectInput(
+        name=name,
+        context=context,
+        platform=platform,
+        description=description,
+        other_details=other_details,
+    )
+    return agent.generate(project_input)
 
-    try:
-        data = json.loads(content)
-        print("\nParsed JSON:")
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-    except json.JSONDecodeError:
-        print("\nCould not parse valid JSON, check the model output formatting.")
+
+# Temporarily. For demo only.
+def generate_from_example(
+    example: dict, llm: Optional[ChatOpenAI] = None
+) -> Union[EventContentOutput, ProjectContentOutput]:
+    if llm is None:
+        llm = create_llm()
+
+    text = f"{example.get('name', '')} {example.get('description', '')}"
+    content_type = route(text, llm)
+
+    if content_type == "EVENT":
+        return generate_event_content(llm=llm, **example)
+    else:
+        return generate_project_content(llm=llm, **example)
+
+
+def run_demo():
+    print("=== LangChain Content Agent Demo ===\n")
+
+    llm = create_llm()
+
+    for i, example in enumerate(ALL_EXAMPLES, 1):
+        print(f"[{i}/{len(ALL_EXAMPLES)}] Processing: {example['name']}")
+
+        try:
+            result = generate_from_example(example, llm)
+
+            text_preview = (
+                result.text[:80] + "..." if len(result.text) > 80 else result.text
+            )
+            print(f"  Text: {text_preview}")
+
+            if hasattr(result, "hooks"):
+                print(f"  Hooks: {len(result.hooks)}")
+            if hasattr(result, "ctas"):
+                print(f"  CTAs: {len(result.ctas)}")
+            if hasattr(result, "hashtags"):
+                print(f"  Hashtags: {len(result.hashtags)}")
+
+            print()
+
+        except Exception as e:
+            print(f"  Error: {e}\n")
 
 
 if __name__ == "__main__":
-    main()
+    run_demo()

@@ -2,3 +2,5 @@ langchain-core
 langchain
 langchain-openai
 python-dotenv
+pydantic
+pydantic-settings
