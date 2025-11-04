@@ -1,4 +1,4 @@
-EVENT_EXAMPLES = [
+EXAMPLES = [
     {
         "name": "GLIA Tech Summit 2025",
         "description": "Un eveniment de top care aduce impreuna lideri din industria tehnologiei pentru a discuta cele mai recente inovatii si tendinte in domeniul tech.",
@@ -13,9 +13,6 @@ EVENT_EXAMPLES = [
         "platform": "Instagram",
         "other_details": "ton energic si practic",
     },
-]
-
-PROJECT_EXAMPLES = [
     {
         "name": "GLIA Pre-Accelerator 2025",
         "context": "lansare",
@@ -31,5 +28,3 @@ PROJECT_EXAMPLES = [
         "other_details": "ton inspirational si urgent",
     },
 ]
-
-ALL_EXAMPLES = EVENT_EXAMPLES + PROJECT_EXAMPLES
