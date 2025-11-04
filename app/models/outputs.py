@@ -18,8 +18,8 @@ class BaseContentOutput(BaseModel):
     @classmethod
     def validate_text_length(cls, v: str) -> str:
         words = len(v.split())
-        if words < 80 or words > 150:
-            raise ValueError(f"Text must be 80-150 words, got {words}")
+        if words < 50 or words > 200:
+            raise ValueError(f"Text must be 50-200 words, got {words}")
         return v
 
 
